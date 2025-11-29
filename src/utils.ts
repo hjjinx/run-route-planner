@@ -62,8 +62,8 @@ export const calculateElevationGain = async (inputPoints: LatLng[]): Promise<num
       }
 
       const requests = chunks.map(chunk => {
-        const lats = chunk.map(p => p.lat.toFixed(5)).join(',');
-        const lngs = chunk.map(p => p.lng.toFixed(5)).join(',');
+        const lats = chunk.map((p: { lat: number; lng: number }) => p.lat.toFixed(5)).join(',');
+        const lngs = chunk.map((p: { lat: number; lng: number }) => p.lng.toFixed(5)).join(',');
         return fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lats}&longitude=${lngs}`)
           .then(res => res.json());
       });
