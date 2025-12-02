@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   Map as MapIcon, 
   RotateCcw, 
@@ -62,6 +62,27 @@ export default function App() {
     script.onload = () => setIsLeafletLoaded(true);
     document.body.appendChild(script);
   }, []);
+
+  const handleUndo = useCallback(() => {
+    if (!isFetching) {
+      setRoutePoints(prev => prev.slice(0, -1));
+    }
+  }, [isFetching]);
+
+  useEffect(() => {
+    const handleUndoKey = (event: KeyboardEvent) => {
+      // Check for Command+Z on macOS or Control+Z on other systems
+      if ((event.metaKey || event.ctrlKey) && event.key === 'z') {
+          event.preventDefault();
+          handleUndo();
+      }
+    }
+
+    document.addEventListener('keydown', handleUndoKey);
+    return () => {
+      document.removeEventListener('keydown', handleUndoKey);
+    }
+  }, [handleUndo]);
 
   useEffect(() => {
     manageSegments(prevPointsRef, routePoints, setSegments, setIsFetching, snapToRoad);
@@ -147,7 +168,6 @@ export default function App() {
   }, [isSidebarOpen]);
 
   // Handlers
-  const handleUndo = () => setRoutePoints(prev => prev.slice(0, -1));
   const handleClear = () => {
     setRoutePoints([]);
     setSegments([]);
@@ -310,7 +330,7 @@ export default function App() {
             <div className="flex space-x-3">
               <button 
                 onClick={handleUndo}
-                disabled={routePoints.length === 0}
+                disabled={routePoints.length === 0 || isFetching}
                 className="flex-1 flex items-center justify-center space-x-2 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 <RotateCcw size={18} />
@@ -318,7 +338,7 @@ export default function App() {
               </button>
               <button 
                 onClick={handleClear}
-                disabled={routePoints.length === 0}
+                disabled={routePoints.length === 0 || isFetching}
                 className="flex-1 flex items-center justify-center space-x-2 py-3 bg-rose-50 border border-rose-100 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 <Trash2 size={18} />
