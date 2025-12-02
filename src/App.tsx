@@ -15,13 +15,14 @@ import {
 import type { LatLng, RouteSegment } from './constants';
 import StatsPanel from './components/StatsPanel';
 import { manageSegments } from './utils';
+import MobileStatsPanel from './components/MobileStatsPanel';
 
 export default function App() {
   const [routePoints, setRoutePoints] = useState<LatLng[]>([]);
   const [segments, setSegments] = useState<RouteSegment[]>([]);
 
   const [unit, setUnit] = useState<'km' | 'mi'>('km');
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isLeafletLoaded, setIsLeafletLoaded] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -69,7 +70,7 @@ export default function App() {
   useEffect(() => {
     if (isLeafletLoaded && mapContainerRef.current && !mapInstanceRef.current) {
       const L = (window as any).L;
-      if (!L) window.location.reload();
+      if (!L) alert('Map failed to load. Please refresh the page.');
       
       const map = L.map(mapContainerRef.current, {
         zoomControl: false,
@@ -222,7 +223,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-gray-100 overflow-hidden font-sans text-slate-800">
+    <div className="flex h-svh w-full bg-gray-100 overflow-hidden font-sans text-slate-800">
       
       {/* Sidebar Controls */}
       <div 
@@ -344,6 +345,15 @@ export default function App() {
         </div>
       </div>
 
+      {/* Mobile Stats Panel - Visible when sidebar is closed on mobile */}
+      {!isSidebarOpen && (
+        <MobileStatsPanel 
+          distanceKm={routeDistance} 
+          unit={unit} 
+          onExpand={() => setSidebarOpen(true)} 
+        />
+      )}
+
       {/* Map Area */}
       <div className="relative flex-1 h-full z-0 bg-slate-200">
         {!isLeafletLoaded && (
@@ -363,7 +373,7 @@ export default function App() {
            {!isSidebarOpen && (
             <button 
               onClick={() => setSidebarOpen(true)}
-              className="bg-white text-slate-800 p-3 rounded-full shadow-lg hover:bg-slate-50 hover:text-emerald-600 transition-all transform hover:scale-110"
+              className="bg-white text-slate-800 p-3 rounded-full shadow-lg hover:bg-slate-50 hover:text-emerald-600 transition-all transform hover:scale-110 active:scale-95 md:hidden"
               title="Open Menu"
             >
               <Menu size={24} />
@@ -376,7 +386,7 @@ export default function App() {
           <button
             onClick={handleLocateUser}
             disabled={isLocating}
-            className={`bg-white text-slate-700 p-3 rounded-lg shadow-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center ${isLocating ? 'animate-pulse' : ''}`}
+            className={`bg-white text-slate-700 p-3 rounded-lg shadow-xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center active:scale-95 ${isLocating ? 'animate-pulse' : ''}`}
             title="Locate Me"
           >
             {isLocating ? (
