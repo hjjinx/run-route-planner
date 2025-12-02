@@ -16,6 +16,7 @@ import type { LatLng, RouteSegment } from './constants';
 import StatsPanel from './components/StatsPanel';
 import { manageSegments } from './utils';
 import MobileStatsPanel from './components/MobileStatsPanel';
+import InfoModal from './components/InfoModal';
 
 export default function App() {
   const [routePoints, setRoutePoints] = useState<LatLng[]>([]);
@@ -23,11 +24,13 @@ export default function App() {
 
   const [unit, setUnit] = useState<'km' | 'mi'>('km');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  
   const [isLeafletLoaded, setIsLeafletLoaded] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [snapToRoad, setSnapToRoad] = useState(true);
-  
+
   // using vancouver as default location
   const [userLocation, setUserLocation] = useState<LatLng>({ lat: 49.2827, lng: -123.1207 });
 
@@ -367,10 +370,14 @@ export default function App() {
 
       {/* Mobile Stats Panel - Visible when sidebar is closed on mobile */}
       {!isSidebarOpen && (
-        <MobileStatsPanel 
-          distanceKm={routeDistance} 
-          unit={unit} 
-          onExpand={() => setSidebarOpen(true)} 
+        <MobileStatsPanel
+          distanceKm={routeDistance}
+          unit={unit}
+          onExpand={() => setSidebarOpen(true)}
+          onInfoClick={(e) => {
+            e.stopPropagation();
+            setShowInfoModal(true);
+          }}
         />
       )}
 
@@ -416,7 +423,8 @@ export default function App() {
             )}
           </button>
         </div>
-
+        
+        <InfoModal isOpen={showInfoModal} onClose={() => setShowInfoModal(false)} />
       </div>
     </div>
   );
